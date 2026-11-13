@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROJETO PMESP - Cronograma & Painel Automatizado de Estudos</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      
+      --green-bg: rgba(34, 197, 94, 0.15);
+      --yellow-bg: rgba(234, 179, 8, 0.15);
+      --red-bg: rgba(239, 68, 68, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Header & Top Bar */
+    header {
+      background-color: #090d16;
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .title-container h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .title-container h1 span {
+      color: var(--accent);
+    }
+
+    .title-container p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 0.5rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.825rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    button:hover {
+      background-color: #2e3e56;
+      border-color: var(--accent);
+    }
+
+    button.btn-accent {
+      background-color: var(--accent);
+      color: #0f172a;
+      border-color: var(--accent);
+    }
+
+    button.btn-accent:hover {
+      background-color: var(--accent-hover);
+      color: #ffffff;
+    }
+
+    /* Dashboard Metrics Bar */
+    .dashboard-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      background-color: #0f172a;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .metric-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-card .title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .metric-card .value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 0.25rem;
+    }
+
+    .metric-card .sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+
+    /* Main Container (Two Columns Layout) */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex: 1;
+      height: calc(100vh - 150px);
+      overflow: hidden;
+    }
+
+    .mobile-tab-bar {
+      display: none;
+      background-color: #090d16;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .mobile-tab-bar button {
+      flex: 1;
+      border-radius: 0;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem;
+    }
+
+    .mobile-tab-bar button.active {
+      border-bottom-color: var(--accent);
+      color: var(--accent);
+      background-color: var(--card-bg);
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 1.25rem;
+      gap: 1.25rem;
+    }
+
+    .column-left {
+      border-right: 1px solid var(--card-border);
+      background-color: #0b1120;
+    }
+
+    .column-right {
+      background-color: #0f172a;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Cronograma Cards */
+    .schedule-day-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .day-header {
+      background-color: #273549;
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--accent);
+    }
+
+    .day-body {
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .block-item {
+      padding: 0.5rem 0.75rem;
+      background-color: #131c2e;
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.825rem;
+    }
+
+    .block-item.rev { border-left-color: var(--yellow); }
+    .block-item.rev-done { border-left-color: var(--green) !important; }
+    .block-item.sim { border-left-color: var(--green); }
+
+    .block-title {
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .block-desc {
+      color: var(--text-muted);
+      font-size: 0.775rem;
+    }
+
+    /* Panel Controls */
+    .panel-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .panel-tab-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 6px;
+    }
+
+    .panel-tab-btn.active {
+      background-color: var(--card-bg);
+      border-color: var(--card-border);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Data Table */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      background-color: var(--card-bg);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.8rem;
+    }
+
+    th, td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #162032;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+    }
+
+    tr:hover {
+      background-color: #24334a;
+    }
+
+    .badge {
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.7rem;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .badge-green { background-color: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+    .badge-yellow { background-color: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
+    .badge-red { background-color: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+
+    input, select, textarea {
+      background-color: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      width: 90%;
+      max-width: 550px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    /* ESTILO DO CRONÔMETRO DE ESTUDOS */
+    .timer-card {
+      background-color: #131d31;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .timer-display {
+      font-size: 1.8rem;
+      font-weight: 800;
+      font-family: 'Courier New', Courier, monospace;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    @media print {
+      body { background-color: #fff; color: #000; }
+      header, .dashboard-bar, .header-actions, .panel-tabs, .timer-card { display: none !important; }
+      .main-layout { display: block; height: auto; overflow: visible; }
+      .column { overflow: visible; padding: 0; }
+      .column-left, .column-right { border: none; background: transparent; }
+      .schedule-day-card, .table-container { border: 1px solid #ccc; page-break-inside: avoid; }
+      th { background-color: #f0f0f0; color: #000; }
+      td { color: #000; }
+    }
+
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .mobile-tab-bar { display: flex; }
+      .column-left, .column-right { display: none; }
+      .column.active-mobile { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="title-container">
+      <h1><span>PMESP</span> | Painel & Cronograma de Estudos</h1>
+      <p>Polícia Militar do Estado de São Paulo — Soldado | 4h/dia (2 Matérias por Dia)</p>
+    </div>
+    <div class="header-actions">
+      <button onclick="exportData()">📥 Backup (JSON)</button>
+      <button onclick="document.getElementById('importFile').click()">📤 Restaurar</button>
+      <input type="file" id="importFile" style="display:none" onchange="importData(event)" accept=".json">
+      <button onclick="exportCSV()">📊 Exportar CSV</button>
+      <button onclick="window.print()">🖨️ Imprimir/PDF</button>
+      <button class="btn-accent" onclick="openNewTopicModal()">+ Novo Registro</button>
+    </div>
+  </header>
+
+  <!-- Metrics Dashboard Bar -->
+  <div class="dashboard-bar">
+    <div class="metric-card">
+      <span class="title">Progresso Geral</span>
+      <span class="value" id="m-progresso">0%</span>
+      <span class="sub" id="m-concluidos-sub">0 de 0 Tópicos</span>
+    </div>
+    <div class="metric-card">
+      <span class="title">Total Questões</span>
+      <span class="value" id="m-questoes">0</span>
+      <span class="sub" id="m-acertos-geral">0% Taxa de Acerto</span>
+    </div>
+    <div class="metric-card">
+      <span class="title">Revisões 24h</span>
+      <span class="value" id="m-rev-24h" style="color: var(--yellow);">0</span>
+      <span class="sub">Pendentes hoje</span>
+    </div>
+    <div class="metric-card">
+      <span class="title">Fila de Recuperação</span>
+      <span class="value" id="m-recuperacao" style="color: var(--red);">0</span>
+      <span class="sub">Abaixo de 70% acertos</span>
+    </div>
+    <div class="metric-card">
+      <span class="title">Nível Dominado</span>
+      <span class="value" id="m-verdes" style="color: var(--green);">0</span>
+      <span class="sub">Tópicos em Verde (≥85%)</span>
+    </div>
+  </div>
+
+  <!-- Mobile View Controls -->
+  <div class="mobile-tab-bar">
+    <button id="mb-btn-left" class="active" onclick="switchMobileTab('left')">📅 Cronograma PMESP</button>
+    <button id="mb-btn-right" onclick="switchMobileTab('right')">📈 Painel & Revisões</button>
+  </div>
+
+  <!-- Main Content Layout -->
+  <div class="main-layout">
+    
+    <!-- LEFT COLUMN -->
+    <div class="column column-left active-mobile" id="col-left">
+      <div class="section-header">
+        <h2>📅 Cronograma PMESP (2 Matérias/Dia — 4h)</h2>
+      </div>
+
+      <div id="schedule-container"></div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="column column-right" id="col-right">
+      
+      <!-- CARD DO CRONÔMETRO INTEGRADO -->
+      <div class="timer-card">
+        <div>
+          <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">⏱️ Horas Líquidas de Estudo</span>
+          <div class="timer-display" id="timer-display">00:00:00</div>
+        </div>
+        <div class="timer-controls">
+          <button class="btn-accent" id="btn-timer-start" onclick="toggleTimer()">▶ Iniciar</button>
+          <button onclick="resetTimer()">⏹ Zerar</button>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2>📈 Painel de Domínio & Fila de Acompanhamento</h2>
+      </div>
+
+      <div class="panel-tabs">
+        <button class="panel-tab-btn active" onclick="switchPanelTab('assuntos')">📚 Assuntos Estudados</button>
+        <button class="panel-tab-btn" onclick="switchPanelTab('revisoes')">🔔 Fila de Revisões (24h / Espaçada)</button>
+        <button class="panel-tab-btn" onclick="switchPanelTab('fechamento')">📊 Fechamento Semanal</button>
+      </div>
+
+      <!-- Tab 1 -->
+      <div id="tab-assuntos" class="panel-tab-content">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <input type="text" id="filter-search" placeholder="🔍 Filtrar por matéria ou assunto..." oninput="renderTable()">
+          <select id="filter-dominio" onchange="renderTable()" style="max-width: 150px;">
+            <option value="todos">Todos os Níveis</option>
+            <option value="verde">Somente Verde</option>
+            <option value="amarelo">Somente Amarelo</option>
+            <option value="vermelho">Somente Vermelho</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Matéria / Assunto</th>
+                <th>Status</th>
+                <th>Questões (A / T)</th>
+                <th>% Acertos</th>
+                <th>Domínio</th>
+                <th>Última Rev.</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="topics-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2 -->
+      <div id="tab-revisoes" class="panel-tab-content" style="display: none;">
+        <div class="schedule-day-card">
+          <div class="day-header" style="color: var(--yellow);">
+            <span>⏱️ Pendências de Revisão (24h / Espaçada)</span>
+          </div>
+          <div class="day-body" id="rev-24h-container"></div>
+        </div>
+
+        <div class="schedule-day-card" style="margin-top: 1rem;">
+          <div class="day-header" style="color: var(--red);">
+            <span>🚨 Fila de Recuperação Prioritária (&lt;70% de Acertos)</span>
+          </div>
+          <div class="day-body" id="rev-recuperacao-container"></div>
+        </div>
+      </div>
+
+      <!-- Tab 3 -->
+      <div id="tab-fechamento" class="panel-tab-content" style="display: none;">
+        <div class="schedule-day-card">
+          <div class="day-header">
+            <span>📋 Resumo Automatizado do Fechamento Semanal</span>
+          </div>
+          <div class="day-body" id="fechamento-summary"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal para Inserir/Editar Assunto -->
+  <div class="modal-overlay" id="topicModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Novo Registro de Estudo</h3>
+        <button onclick="closeModal()" style="padding: 0.2rem 0.5rem;">✕</button>
+      </div>
+
+      <input type="hidden" id="edit-id">
+
+      <div class="modal-grid">
+        <div>
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Matéria</label>
+          <select id="input-materia">
+            <option value="Língua Portuguesa">Língua Portuguesa</option>
+            <option value="Matemática">Matemática</option>
+            <option value="Conhecimentos Gerais">Conhecimentos Gerais (História/Geografia)</option>
+            <option value="Noções Básicas de Informática">Noções Básicas de Informática</option>
+            <option value="Noções de Administração Pública">Noções de Administração Pública</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Status</label>
+          <select id="input-status">
+            <option value="não iniciado">Não Iniciado</option>
+            <option value="em andamento">Em Andamento</option>
+            <option value="concluído">Concluído</option>
+          </select>
+        </div>
+
+        <div class="full-width">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Assunto Específico / Tópico do Edital</label>
+          <input type="text" id="input-assunto" placeholder="Ex: Crase / Constituição do Estado de SP">
+        </div>
+
+        <div>
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Data Estudo Inicial</label>
+          <input type="date" id="input-data-estudo">
+        </div>
+
+        <div>
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Questões Resolvidas</label>
+          <input type="number" id="input-questoes" value="0" min="0">
+        </div>
+
+        <div>
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Acertos</label>
+          <input type="number" id="input-acertos" value="0" min="0">
+        </div>
+
+        <div>
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Nível Domínio Manual (Opção)</label>
+          <select id="input-dominio-manual">
+            <option value="auto">Automático (Pelo %)</option>
+            <option value="verde">Verde (≥ 85%)</option>
+            <option value="amarelo">Amarelo (70% - 84.9%)</option>
+            <option value="vermelho">Vermelho (&lt; 70%)</option>
+          </select>
+        </div>
+
+        <div class="full-width">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Observações / Principais Erros Cometidos</label>
+          <textarea id="input-obs" rows="3" placeholder="Registre pegadinhas da Vunesp, artigos importantes..."></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+        <button onclick="closeModal()">Cancelar</button>
+        <button class="btn-accent" onclick="saveTopic()">Salvar Registro</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* LÓGICA DO CRONÔMETRO */
+    let timerInterval = null;
+    let timerSeconds = 0;
+
+    function updateTimerDisplay() {
+      const hrs = Math.floor(timerSeconds / 3600).toString().padStart(2, '0');
+      const mins = Math.floor((timerSeconds % 3600) / 60).toString().padStart(2, '0');
+      const secs = (timerSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer-display').innerText = `${hrs}:${mins}:${secs}`;
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('btn-timer-start');
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        btn.innerText = '▶ Continuar';
+        btn.classList.add('btn-accent');
+      } else {
+        timerInterval = setInterval(() => {
+          timerSeconds++;
+          updateTimerDisplay();
+        }, 1000);
+        btn.innerText = '⏸ Pausar';
+        btn.classList.remove('btn-accent');
+      }
+    }
+
+    function resetTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      timerSeconds = 0;
+      updateTimerDisplay();
+      const btn = document.getElementById('btn-timer-start');
+      btn.innerText = '▶ Iniciar';
+      btn.classList.add('btn-accent');
+    }
+
+    const STORAGE_KEY = 'pmesp_cronograma_painel_v1';
+
+    // Cronograma estruturado: 2 matérias por dia (4 horas totais divididas em blocos de 2h + padrão de revisão)
+    const schedulePMESP = [
+      { 
+        day: "Segunda-feira", 
+        b1: "Revisão 24h + Questões Prévias (30 min)", 
+        b2: "Matéria 1: Língua Portuguesa (1h 45m)", 
+        b3: "Matéria 2: Matemática (1h 45m)" 
+      },
+      { 
+        day: "Terça-feira", 
+        b1: "Revisão 24h + Questões Prévias (30 min)", 
+        b2: "Matéria 1: Noções de Administração Pública (1h 45m)", 
+        b3: "Matéria 2: Conhecimentos Gerais - História (1h 45m)" 
+      },
+      { 
+        day: "Quarta-feira", 
+        b1: "Revisão 24h + Questões Prévias (30 min)", 
+        b2: "Matéria 1: Noções Básicas de Informática (1h 45m)", 
+        b3: "Matéria 2: Língua Portuguesa (1h 45m)" 
+      },
+      { 
+        day: "Quinta-feira", 
+        b1: "Revisão 24h + Questões Prévias (30 min)", 
+        b2: "Matéria 1: Matemática (1h 45m)", 
+        b3: "Matéria 2: Noções de Administração Pública (1h 45m)" 
+      },
+      { 
+        day: "Sexta-feira", 
+        b1: "Revisão 24h + Questões Prévias (30 min)", 
+        b2: "Matéria 1: Conhecimentos Gerais - Geografia & Atualidades (1h 45m)", 
+        b3: "Matéria 2: Noções Básicas de Informática (1h 45m)" 
+      },
+      { 
+        day: "Sábado", 
+        b1: "Varredura Geral da Semana & Lei Seca (2 Horas)", 
+        b2: "Bateria de 60 Questões Foco Banca Vunesp (2 Horas)", 
+        b3: "Sem Carga Adicional" 
+      },
+      { 
+        day: "Domingo", 
+        b1: "Simulado Parcial PMESP / Redação (2h 30m)", 
+        b2: "Análise do Caderno de Erros e Correções (1h 30m)", 
+        b3: "Descanso Estratégico" 
+      }
+    ];
+
+    let topicsData = [];
+
+    const initialTopicsSample = [
+      { id: 1, materia: "Língua Portuguesa", assunto: "Leitura e interpretação de diversos tipos de textos", status: "concluído", dataEstudo: "2026-11-10", questoes: 30, acertos: 26, dominioManual: "auto", obs: "Foco em textos literários e não literários.", rev24hConcluida: false },
+      { id: 2, materia: "Matemática", assunto: "Razão e proporção / Porcentagem / Regra de três", status: "em andamento", dataEstudo: "2026-11-11", questoes: 20, acertos: 14, dominioManual: "auto", obs: "Revisar cálculos de porcentagem rápida.", rev24hConcluida: false },
+      { id: 3, materia: "Noções de Administração Pública", assunto: "CF/88: Título II (Direitos Fundamentais) e Título III (Admin. Pública)", status: "concluído", dataEstudo: "2026-11-12", questoes: 25, acertos: 22, dominioManual: "auto", obs: "Artigos fundamentais da Vunesp.", rev24hConcluida: true },
+      { id: 4, materia: "Noções Básicas de Informática", assunto: "MS-Windows 10 e MS-Word 2016", status: "não iniciado", dataEstudo: "", questoes: 0, acertos: 0, dominioManual: "auto", obs: "", rev24hConcluida: false }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      renderSchedule();
+      renderDashboard();
+      renderTable();
+      renderRevisions();
+      renderFechamento();
+    });
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          topicsData = JSON.parse(saved);
+        } catch (e) {
+          topicsData = [...initialTopicsSample];
+        }
+      } else {
+        topicsData = [...initialTopicsSample];
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(topicsData));
+      renderDashboard();
+      renderTable();
+      renderRevisions();
+      renderFechamento();
+    }
+
+    function renderSchedule() {
+      const container = document.getElementById('schedule-container');
+      let html = `<p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">Rotina Diária Focada: 2 Matérias por Dia (Média de 4 Horas Líquidas)</p>`;
+
+      schedulePMESP.forEach(item => {
+        html += `
+          <div class="schedule-day-card">
+            <div class="day-header">
+              <span>${item.day}</span>
+            </div>
+            <div class="day-body">
+              <div class="block-item rev">
+                <div class="block-title"><span>Rotina de Abertura & Revisão</span></div>
+                <div class="block-desc">${item.b1}</div>
+              </div>
+              <div class="block-item">
+                <div class="block-title"><span>Bloco de Estudo 1 (2h)</span></div>
+                <div class="block-desc">${item.b2}</div>
+              </div>
+              <div class="block-item">
+                <div class="block-title"><span>Bloco de Estudo 2 (2h)</span></div>
+                <div class="block-desc">${item.b3}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderDashboard() {
+      const totalTopics = topicsData.length;
+      const concluidos = topicsData.filter(t => t.status === 'concluído').length;
+      const progreso = totalTopics > 0 ? Math.round((concluidos / totalTopics) * 100) : 0;
+
+      let totalQ = 0;
+      let totalA = 0;
+      let verdes = 0;
+      let recuperacao = 0;
+
+      topicsData.forEach(t => {
+        const q = parseInt(t.questoes) || 0;
+        const a = parseInt(t.acertos) || 0;
+        totalQ += q;
+        totalA += a;
+
+        const perc = q > 0 ? (a / q) * 100 : 0;
+        const level = getDomainLevel(t, perc);
+
+        if (level === 'verde') verdes++;
+        if (level === 'vermelho' && q >= 5) recuperacao++;
+      });
+
+      const taxaAcertoGeral = totalQ > 0 ? Math.round((totalA / totalQ) * 100) : 0;
+
+      document.getElementById('m-progresso').innerText = `${progreso}%`;
+      document.getElementById('m-concluidos-sub').innerText = `${concluidos} de ${totalTopics} Tópicos`;
+      document.getElementById('m-questoes').innerText = totalQ;
+      document.getElementById('m-acertos-geral').innerText = `${taxaAcertoGeral}% Taxa Acertos`;
+      document.getElementById('m-verdes').innerText = verdes;
+      document.getElementById('m-recuperacao').innerText = recuperacao;
+      
+      const pending24h = topicsData.filter(t => t.dataEstudo && !t.rev24hConcluida).length;
+      document.getElementById('m-rev-24h').innerText = pending24h;
+    }
+
+    function getDomainLevel(topic, perc) {
+      if (topic.dominioManual && topic.dominioManual !== 'auto') {
+        return topic.dominioManual;
+      }
+      if (perc >= 85) return 'verde';
+      if (perc >= 70) return 'amarelo';
+      return 'vermelho';
+    }
+
+    function switchPanelTab(tabName) {
+      document.querySelectorAll('.panel-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.panel-tab-content').forEach(content => content.style.display = 'none');
+
+      if (tabName === 'assuntos') {
+        document.querySelectorAll('.panel-tab-btn')[0].classList.add('active');
+        document.getElementById('tab-assuntos').style.display = 'block';
+      } else if (tabName === 'revisoes') {
+        document.querySelectorAll('.panel-tab-btn')[1].classList.add('active');
+        document.getElementById('tab-revisoes').style.display = 'block';
+      } else if (tabName === 'fechamento') {
+        document.querySelectorAll('.panel-tab-btn')[2].classList.add('active');
+        document.getElementById('tab-fechamento').style.display = 'block';
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('topics-table-body');
+      const search = document.getElementById('filter-search').value.toLowerCase();
+      const filterDominio = document.getElementById('filter-dominio').value;
+
+      tbody.innerHTML = '';
+
+      topicsData.forEach((t) => {
+        const q = parseInt(t.questoes) || 0;
+        const a = parseInt(t.acertos) || 0;
+        const perc = q > 0 ? ((a / q) * 100).toFixed(1) : 0;
+        const level = getDomainLevel(t, perc);
+
+        if (filterDominio !== 'todos' && level !== filterDominio) return;
+        if (search && !t.materia.toLowerCase().includes(search) && !t.assunto.toLowerCase().includes(search)) return;
+
+        let badgeClass = 'badge-yellow';
+        let badgeText = 'Amarelo';
+        if (level === 'verde') { badgeClass = 'badge-green'; badgeText = 'Verde'; }
+        if (level === 'vermelho') { badgeClass = 'badge-red'; badgeText = 'Vermelho'; }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong>${t.materia}</strong><br>
+            <span style="color:var(--text-muted); font-size:0.75rem;">${t.assunto}</span>
+          </td>
+          <td><span style="font-size:0.75rem;">${t.status}</span></td>
+          <td>${a} / ${q}</td>
+          <td>${q > 0 ? perc + '%' : '<span style="color:var(--text-muted);">Amostra insuficiente</span>'}</td>
+          <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          <td>${t.dataEstudo || '-'}</td>
+          <td>
+            <button onclick="editTopic(${t.id})" style="padding:0.2rem 0.4rem; font-size:0.7rem;">✏️ Edit</button>
+            <button onclick="deleteTopic(${t.id})" style="padding:0.2rem 0.4rem; font-size:0.7rem; color:var(--red);">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderRevisions() {
+      const rev24Container = document.getElementById('rev-24h-container');
+      const recContainer = document.getElementById('rev-recuperacao-container');
+
+      rev24Container.innerHTML = '';
+      recContainer.innerHTML = '';
+
+      let has24h = false;
+      let hasRec = false;
+
+      topicsData.forEach(t => {
+        const q = parseInt(t.questoes) || 0;
+        const a = parseInt(t.acertos) || 0;
+        const perc = q > 0 ? (a / q) * 100 : 0;
+        const level = getDomainLevel(t, perc);
+
+        if (t.dataEstudo) {
+          has24h = true;
+          const isDone = !!t.rev24hConcluida;
+
+          rev24Container.innerHTML += `
+            <div class="block-item ${isDone ? 'rev-done' : 'rev'}">
+              <div class="block-title">
+                <span>${t.materia} — ${t.assunto}</span>
+                ${isDone 
+                  ? '<span class="badge badge-green">✓ Rev 24h OK</span>' 
+                  : `<button onclick="markRevisionDone(${t.id})" style="padding:0.25rem 0.6rem; font-size:0.725rem; background-color:var(--card-bg); border-color:var(--accent); color:var(--accent);">Concluir Rev 24h</button>`
+                }
+              </div>
+              <div class="block-desc">Estudado em: ${t.dataEstudo} | Status: ${t.status}</div>
+            </div>
+          `;
+        }
+
+        if (level === 'vermelho' && q >= 3) {
+          hasRec = true;
+          recContainer.innerHTML += `
+            <div class="block-item" style="border-left-color: var(--red);">
+              <div class="block-title">
+                <span>${t.materia} — ${t.assunto}</span>
+                <span class="badge badge-red">${perc.toFixed(1)}% Acertos</span>
+              </div>
+              <div class="block-desc"><strong>Erro mapeado:</strong> ${t.obs || 'Nenhuma observação cadastrada.'}</div>
+            </div>
+          `;
+        }
+      });
+
+      if (!has24h) rev24Container.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted);">Nenhum assunto cadastrado para revisão.</p>';
+      if (!hasRec) recContainer.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted);">Excelente! Nenhum assunto na fila de recuperação (&lt;70% de acertos).</p>';
+    }
+
+    function markRevisionDone(id) {
+      const idx = topicsData.findIndex(t => t.id == id);
+      if (idx !== -1) {
+        topicsData[idx].rev24hConcluida = true;
+        saveData();
+      }
+    }
+
+    function renderFechamento() {
+      const container = document.getElementById('fechamento-summary');
+      const totalQ = topicsData.reduce((acc, curr) => acc + (parseInt(curr.questoes) || 0), 0);
+      const totalA = topicsData.reduce((acc, curr) => acc + (parseInt(curr.acertos) || 0), 0);
+      const taxa = totalQ > 0 ? ((totalA / totalQ) * 100).toFixed(1) : 0;
+
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.825rem;">
+          <p><strong>Questões Totais Resolvidas na Semana:</strong> ${totalQ}</p>
+          <p><strong>Aproveitamento Geral:</strong> ${taxa}% de Acertos</p>
+          <p><strong>Estratégia Vunesp:</strong> Foco em interpretação de texto e literalidade de leis (CF, CE-SP e LAI).</p>
+          <p style="color:var(--accent); margin-top:0.5rem;"><strong>Sugestão de Prioridades para Próxima Semana:</strong></p>
+          <ul style="padding-left:1.2rem; color:var(--text-muted);">
+            <li>Revisar os tópicos em <span style="color:var(--red);">Vermelho</span> na fila de recuperação.</li>
+            <li>Manter a constância de 4 horas diárias divididas rigidamente nos dois blocos.</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    function openNewTopicModal() {
+      document.getElementById('edit-id').value = '';
+      document.getElementById('modal-title').innerText = 'Novo Registro de Estudo';
+      document.getElementById('input-assunto').value = '';
+      document.getElementById('input-questoes').value = '0';
+      document.getElementById('input-acertos').value = '0';
+      document.getElementById('input-obs').value = '';
+      document.getElementById('input-data-estudo').value = new Date().toISOString().split('T')[0];
+      document.getElementById('topicModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('topicModal').style.display = 'none';
+    }
+
+    function saveTopic() {
+      const id = document.getElementById('edit-id').value;
+      const materia = document.getElementById('input-materia').value;
+      const status = document.getElementById('input-status').value;
+      const assunto = document.getElementById('input-assunto').value.trim();
+      const dataEstudo = document.getElementById('input-data-estudo').value;
+      const questoes = parseInt(document.getElementById('input-questoes').value) || 0;
+      const acertos = parseInt(document.getElementById('input-acertos').value) || 0;
+      const dominioManual = document.getElementById('input-dominio-manual').value;
+      const obs = document.getElementById('input-obs').value.trim();
+
+      if (!assunto) {
+        alert('Por favor, informe o assunto específico.');
+        return;
+      }
+
+      if (id) {
+        const idx = topicsData.findIndex(t => t.id == id);
+        if (idx !== -1) {
+          topicsData[idx] = { 
+            ...topicsData[idx], 
+            materia, status, assunto, dataEstudo, questoes, acertos, dominioManual, obs 
+          };
+        }
+      } else {
+        const newObj = {
+          id: Date.now(),
+          materia, status, assunto, dataEstudo, questoes, acertos, dominioManual, obs,
+          rev24hConcluida: false
+        };
+        topicsData.push(newObj);
+      }
+
+      saveData();
+      closeModal();
+    }
+
+    function editTopic(id) {
+      const t = topicsData.find(item => item.id == id);
+      if (!t) return;
+
+      document.getElementById('edit-id').value = t.id;
+      document.getElementById('modal-title').innerText = 'Editar Registro de Estudo';
+      document.getElementById('input-materia').value = t.materia;
+      document.getElementById('input-status').value = t.status;
+      document.getElementById('input-assunto').value = t.assunto;
+      document.getElementById('input-data-estudo').value = t.dataEstudo || '';
+      document.getElementById('input-questoes').value = t.questoes;
+      document.getElementById('input-acertos').value = t.acertos;
+      document.getElementById('input-dominio-manual').value = t.dominioManual || 'auto';
+      document.getElementById('input-obs').value = t.obs || '';
+
+      document.getElementById('topicModal').style.display = 'flex';
+    }
+
+    function deleteTopic(id) {
+      if (confirm('Deseja realmente remover este registro?')) {
+        topicsData = topicsData.filter(t => t.id != id);
+        saveData();
+      }
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(topicsData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `backup_cronograma_pmesp_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importData(event) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported)) {
+            topicsData = imported;
+            saveData();
+            alert('Dados restaurados com sucesso!');
+          }
+        } catch (err) {
+          alert('Erro ao importar arquivo JSON.');
+        }
+      };
+      reader.readAsText(event.target.files[0]);
+    }
+
+    function exportCSV() {
+      let csv = 'ID,Materia,Assunto,Status,DataEstudo,Questoes,Acertos,Dominio,Rev24hConcluida,Observacoes\n';
+      topicsData.forEach(t => {
+        csv += `"${t.id}","${t.materia}","${t.assunto}","${t.status}","${t.dataEstudo}","${t.questoes}","${t.acertos}","${t.dominioManual}","${!!t.rev24hConcluida}","${t.obs}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `relatorio_estudos_pmesp_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function switchMobileTab(side) {
+      document.getElementById('mb-btn-left').classList.toggle('active', side === 'left');
+      document.getElementById('mb-btn-right').classList.toggle('active', side === 'right');
+      document.getElementById('col-left').classList.toggle('active-mobile', side === 'left');
+      document.getElementById('col-right').classList.toggle('active-mobile', side === 'right');
+    }
+  </script>
+</body>
+</html>
